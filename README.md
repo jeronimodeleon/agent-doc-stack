@@ -11,6 +11,7 @@ This repository contains the **Agent Doc Stack v1.0 specification** and a single
 Agent Doc Stack is a **contract-based documentation specification** for AI-assisted software development.
 
 It defines:
+
 - Canonical documentation locations
 - Strict rules for how agents read, write, and update docs
 - Writing standards optimized for token efficiency
@@ -22,13 +23,47 @@ It works across modern coding agents including Claude Code, Codex CLI, Cursor, a
 
 ---
 
+## Canonical Repository Structure
+
+Agent Doc Stack standardizes documentation into a small, predictable set of files.
+
+```text
+README.md
+ARCHITECTURE.md
+
+docs/
+  app-workflows.md
+  dev-workflows.md
+  agent-tools.md        # optional (MCP / tool access)
+  features/
+    _template.md
+    <feature>.md
+
+AGENTS.md
+CLAUDE.md
+
+plans/
+  _template.md
+  YYYY-MM-DD-short-title.md
+```
+
+Each file has a single, well-defined responsibility.
+
+Agents are explicitly instructed where to read, write, and update documentation as code changes.
+
+---
+
 ## Repository Contents
 
-- **agent-doc-stack.md**  
-  The authoritative Agent Doc Stack v1.0 specification.
+This repository includes:
 
-- **initialization-prompt.md**  
-  A reusable prompt that instructs a coding agent to initialize or normalize documentation in a repository using the spec.
+### `agent-doc-stack.md`
+
+The authoritative Agent Doc Stack v1.0 specification.
+
+### `initialization-prompt.md`
+
+A reusable prompt that instructs a coding agent to initialize or normalize documentation in a repository using the spec.
 
 ---
 
@@ -36,7 +71,7 @@ It works across modern coding agents including Claude Code, Codex CLI, Cursor, a
 
 You should already be inside the repository whose documentation you want to create or fix.
 
-Typical workflow:
+**Typical workflow:**
 
 1. Open the target repository in your coding agent.
 2. Run the `initialization-prompt.md`.
@@ -44,12 +79,13 @@ Typical workflow:
 4. Answer clarifying questions if the agent requests missing information.
 
 The agent will:
+
 - Treat the current folder as the repository root
 - Follow the Agent Doc Stack rules exactly
 - Generate, update, or clean documentation without inventing behavior
 - Ask questions when information is unclear or unavailable
 
-You do **not** need to copy this repository into your project.
+> You do not need to copy this repository into your project.
 
 ---
 
@@ -57,9 +93,12 @@ You do **not** need to copy this repository into your project.
 
 The canonical framework lives in:
 
+```
 agent-doc-stack.md
+```
 
-All behavior, structure, and rules are defined there.  
+All structure, rules, and behavior are defined there.
+
 This file is the single source of truth.
 
 ---
@@ -73,7 +112,7 @@ As coding agents take on more responsibility, documentation must be:
 - Low-noise
 - Safe from hallucination and drift
 
-Agent Doc Stack treats documentation as a **system contract**, not prose.
+Agent Doc Stack treats documentation as a system contract, not prose.
 
 ---
 
