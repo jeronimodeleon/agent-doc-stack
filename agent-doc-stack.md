@@ -39,7 +39,12 @@ docs/
     <feature>.md
 
 AGENTS.md
-CLAUDE.md
+
+# Agent-specific config (create only for the agent in use)
+CLAUDE.md                           # Claude Code only
+.cursorrules                        # Cursor (legacy)
+.cursor/rules/*.mdc                 # Cursor (current)
+.github/copilot-instructions.md     # GitHub Copilot
 
 plans/
   _template.md
@@ -47,6 +52,8 @@ plans/
 ```
 
 > **Hard Rule:** Agents MUST NOT create new documentation files unless explicitly instructed.
+
+> **Agent Config Rule:** Only create the agent-specific config file for the agent currently being used. Do not create config files for other agents. Note: Codex CLI uses `AGENTS.md` directly—no separate config file needed.
 
 ---
 
@@ -60,7 +67,7 @@ Before making changes, agents MUST read docs in this order:
 4. `docs/app-workflows.md`
 5. `docs/dev-workflows.md`
 6. `AGENTS.md`
-7. `CLAUDE.md`
+7. Agent-specific config file (if present)
 8. `docs/agent-tools.md` (only if tools are required)
 
 ---
@@ -146,7 +153,7 @@ Before making changes, agents MUST read docs in this order:
 ### Required structure
 
 ```markdown
-# Feature: <Name>
+# Feature: <n>
 
 ## Purpose
 One sentence describing the problem this feature solves.
@@ -287,6 +294,8 @@ One sentence describing the problem this feature solves.
 
 **Purpose:** global enforcement rules for coding agents
 
+> **Note:** This file is also used directly by Codex CLI as its configuration file.
+
 ### MUST include
 
 #### Documentation Rules
@@ -350,11 +359,22 @@ One sentence describing the problem this feature solves.
 
 ---
 
-## 11. CLAUDE.md
+## 11. Agent-Specific Config Files *(Conditional)*
 
-**Purpose:** tool-specific operating constraints
+**Purpose:** tool-specific operating constraints for a particular coding agent
 
-### MUST include
+> **Rule:** Only create the config file for the agent currently in use. Do not create files for other agents.
+
+### Supported agents and config locations
+
+| Agent | Config File | Notes |
+|-------|-------------|-------|
+| Claude Code | `CLAUDE.md` | Project root |
+| Codex CLI | `AGENTS.md` | Uses the shared AGENTS.md file directly |
+| Cursor | `.cursorrules` or `.cursor/rules/*.mdc` | `.cursorrules` is legacy; `.mdc` files are current |
+| GitHub Copilot | `.github/copilot-instructions.md` | Inside `.github/` directory |
+
+### MUST include (for agent-specific files)
 
 - Follow AGENTS.md at all times
 - Required doc read order
@@ -366,6 +386,7 @@ One sentence describing the problem this feature solves.
 
 - 10–20 lines max
 - No policy duplication
+- Reference AGENTS.md for shared rules
 
 ---
 
