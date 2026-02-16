@@ -14,7 +14,7 @@ This specification is authoritative. You MUST follow it strictly.
 
 ## Your Task
 
-Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack specification.
+Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.0 specification.
 
 Your objectives:
 
@@ -22,6 +22,8 @@ Your objectives:
 - Remove ambiguity, duplication, and drift
 - Minimize tokens while maximizing correctness
 - Ensure future agents can safely operate in this repo
+- Set up progressive disclosure: `AGENTS.md` as a ~100-line table of contents pointing to deep docs
+- Ensure all knowledge agents need is in-repo and agent-legible
 
 ---
 
@@ -70,7 +72,7 @@ If a `README.md` already exists:
   - Move workflow details to `docs/app-workflows.md` or `docs/dev-workflows.md`
   - Keep only README-appropriate content in `README.md`
 
-- DO NOT discard information—relocate it to the correct canonical location
+- DO NOT discard information — relocate it to the correct canonical location
 
 - If the existing README contains information not covered by the spec, ask where it should live
 
@@ -126,6 +128,24 @@ Do NOT create config files for agents other than yourself.
 
 ---
 
+## AGENTS.md Setup
+
+`AGENTS.md` is the agent's **table of contents** — not a rules dump.
+
+When creating or updating `AGENTS.md`, ensure it:
+
+- Is ~100 lines total
+- Explains the repo purpose (2-3 lines)
+- Lists architecture boundaries with a link to `ARCHITECTURE.md`
+- States invariants and guardrails (testing, doc updates, PR structure)
+- Provides a doc map: one line per doc file with path + purpose
+- Points to `docs/exec-plans/active/` for planning
+- Describes the review/execution loop
+- Contains no prose blocks — every line is actionable or a pointer
+- Does not duplicate rules — points to source docs instead
+
+---
+
 ## Planning Requirement
 
 If the work involves:
@@ -137,7 +157,7 @@ If the work involves:
 
 Then you MUST:
 
-1. Write a plan to `plans/YYYY-MM-DD-initialization.md`
+1. Write a plan to `docs/exec-plans/active/YYYY-MM-DD-initialization.md`
 2. Include:
    - Existing files found and their disposition (keep, merge, relocate, delete)
    - Files to be created, updated, merged, or removed
@@ -147,7 +167,51 @@ Then you MUST:
    - the plan is complete
    - blocking questions are resolved
 
-Plans are temporary and MUST NOT become sources of truth.
+Plans are versioned artifacts tracked in `docs/exec-plans/`.
+
+---
+
+## New Doc Artifacts
+
+In addition to the core docs (README, ARCHITECTURE, AGENTS, features, workflows), create the following when applicable:
+
+### Quality, Reliability, Security
+
+- `docs/QUALITY_SCORE.md` — encode golden principles (shared utilities, data boundaries, test coverage, architectural layering)
+- `docs/RELIABILITY.md` — SLOs, known fragile areas, degradation strategies
+- `docs/SECURITY.md` — trust boundaries, auth model, data handling policies
+
+Only create these if you have concrete information to populate them. Empty shells are not useful.
+
+### Product Specs
+
+- `docs/product-specs/<spec>.md` — for cross-cutting product behavior that spans multiple features
+- Same writing rules as feature docs
+
+### Design Docs
+
+- `docs/design-docs/<decision>.md` — for any significant architecture decisions discovered during initialization
+- Use the lightweight ADR format: Context, Decision, Consequences
+
+### References
+
+- `docs/references/<topic>.md` — pin any external knowledge the repo depends on
+- Include source URL as citation
+
+### Tech Debt Tracker
+
+- `docs/exec-plans/tech-debt-tracker.md` — log any tech debt discovered during initialization
+
+---
+
+## Agent Legibility Check
+
+Before marking initialization as complete, verify:
+
+- All knowledge an agent needs to operate is in-repo as versioned markdown
+- No critical information lives only in external systems (Slack, Confluence, Google Docs)
+- If external dependencies are found, pin summaries into `docs/references/`
+- `AGENTS.md` serves as an effective table of contents — a fresh agent can read it and know where to go
 
 ---
 
@@ -158,6 +222,8 @@ You are finished when:
 - All required documentation exists in the correct locations
 - Existing documentation has been preserved and relocated appropriately
 - Each document follows the Agent Doc Stack writing standards
+- `AGENTS.md` is a ~100-line table of contents, not a manual
 - Cross-links between documents are correct
 - No speculative, duplicate, or orphan documentation remains
 - All assumptions are either validated or explicitly documented
+- Agent legibility check passes

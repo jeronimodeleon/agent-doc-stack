@@ -1,8 +1,10 @@
 # Agent Doc Stack
 
-Agent Doc Stack is a lightweight, agent-first documentation architecture that defines where truth lives and how coding agents generate, update, and enforce docs with minimal tokens and zero drift.
+Agent Doc Stack is an agent-first documentation architecture where coding agents are the primary consumers. It defines where truth lives, how agents discover it through progressive disclosure, and how they generate, update, and enforce docs with minimal tokens and zero drift.
 
-This repository contains the **Agent Doc Stack v1.0 specification** and a single initialization prompt used to apply the framework to any codebase.
+**Humans steer. Agents execute.**
+
+This repository contains the **Agent Doc Stack v2.0 specification** and an initialization prompt used to apply the framework to any codebase.
 
 ---
 
@@ -12,8 +14,10 @@ Agent Doc Stack is a **contract-based documentation specification** for AI-assis
 
 It defines:
 
-- Canonical documentation locations
-- Strict rules for how agents read, write, and update docs
+- Canonical documentation locations with progressive disclosure
+- Structured discovery: agents read a ~100-line table of contents, then drill into deep docs
+- Planning as code: versioned execution plans with goals, decisions, and validation
+- Quality, reliability, and security as first-class doc artifacts
 - Writing standards optimized for token efficiency
 - Enforcement rules to prevent documentation drift
 
@@ -25,41 +29,52 @@ It works across modern coding agents including Claude Code, Codex CLI, Cursor, a
 
 ## Canonical Repository Structure
 
-Agent Doc Stack standardizes documentation into a small, predictable set of files.
-
 ```text
-README.md
-ARCHITECTURE.md
+README.md                              # Product contract + entry point
+ARCHITECTURE.md                        # System layout, boundaries, data flows
+AGENTS.md                              # Agent table of contents (~100 lines)
 
 docs/
-  app-workflows.md
-  dev-workflows.md
-  agent-tools.md        # optional (MCP / tool access)
+  app-workflows.md                     # User journeys
+  dev-workflows.md                     # Engineering workflows
+  agent-tools.md                       # MCP / tool access (optional)
+  QUALITY_SCORE.md                     # Golden principles + quality tracking
+  RELIABILITY.md                       # SLOs, fragile areas, reliability constraints
+  SECURITY.md                          # Trust boundaries, auth, data policies
   features/
     _template.md
     <feature>.md
+  product-specs/                       # Broader product specs (cross-cutting)
+    <spec>.md
+  design-docs/                         # Architecture decisions (lightweight ADRs)
+    <decision>.md
+  references/                          # Pinned external knowledge
+    <topic>.md
+  exec-plans/
+    active/
+      <plan>.md
+    completed/
+      <plan>.md
+    tech-debt-tracker.md
 
-AGENTS.md
-CLAUDE.md
-
-plans/
-  _template.md
-  YYYY-MM-DD-short-title.md
+# Agent-specific config (create only for the agent in use)
+CLAUDE.md                              # Claude Code only
+.cursorrules                           # Cursor (legacy)
+.cursor/rules/*.mdc                    # Cursor (current)
+.github/copilot-instructions.md        # GitHub Copilot
 ```
 
 Each file has a single, well-defined responsibility.
 
-Agents are explicitly instructed where to read, write, and update documentation as code changes.
+Agents read `AGENTS.md` as a table of contents, then drill into specific docs as needed.
 
 ---
 
 ## Repository Contents
 
-This repository includes:
-
 ### `agent-doc-stack.md`
 
-The authoritative Agent Doc Stack v1.0 specification.
+The authoritative Agent Doc Stack v2.0 specification.
 
 ### `initialization-prompt.md`
 
@@ -83,6 +98,8 @@ The agent will:
 - Treat the current folder as the repository root
 - Follow the Agent Doc Stack rules exactly
 - Generate, update, or clean documentation without inventing behavior
+- Create quality, reliability, and security docs as appropriate
+- Set up `docs/exec-plans/` for planning as code
 - Ask questions when information is unclear or unavailable
 
 > You do not need to copy this repository into your project.
@@ -107,12 +124,13 @@ This file is the single source of truth.
 
 As coding agents take on more responsibility, documentation must be:
 
-- Predictable
-- Enforceable
-- Low-noise
-- Safe from hallucination and drift
+- **Agent-legible** — if the agent can't read it in-repo, it doesn't exist
+- **Progressively disclosed** — short entrypoints point to deep docs
+- **Enforceable** — contracts, not prose
+- **Low-noise** — minimum tokens, maximum signal
+- **Safe from hallucination and drift** — predictable locations, strict update rules
 
-Agent Doc Stack treats documentation as a system contract, not prose.
+Agent Doc Stack treats documentation as a system contract designed for agents as the primary consumer.
 
 ---
 
@@ -120,7 +138,7 @@ Agent Doc Stack treats documentation as a system contract, not prose.
 
 Agent Doc Stack follows semantic versioning.
 
-- The current version is defined in `agent-doc-stack.md`
+- The current version is **v2.0**, defined in `agent-doc-stack.md`
 - Patch releases clarify wording without changing behavior
 - Minor releases may add rules while remaining backward compatible
 - Major releases may introduce breaking changes

@@ -1,59 +1,70 @@
-# Agent Doc Stack
+# Agent Doc Stack v2.0
 
-A contract-based, agent-first documentation system for AI-assisted application development with low-token, high-signal standards
+A contract-based, agent-first documentation system for AI-assisted application development
 
 ---
 
-## 1. Core Principles
+## 1. Core Philosophy
 
+**Humans steer. Agents execute.**
+
+Documentation exists so coding agents can operate autonomously within defined boundaries. Every doc artifact is written for agents as the primary consumer and humans as reviewers.
+
+### Foundational Principles
+
+- Repository-local knowledge is the only truth — if the agent can't read it in-repo, it doesn't exist
 - Docs are contracts, not explanations
-- Structure over prose
-- Bullets over paragraphs
+- Structure over prose; bullets over paragraphs
 - Durable truth lives in predictable locations
 - Temporary thinking never becomes documentation
-- Agents must always know:
-  - what to read
-  - where to write
-  - what to update
+- Documentation must use progressive disclosure: short entrypoints point to deep docs
 - Tests are the executable contract for behavior
+- Agents must always know: what to read, where to write, what to update
 
-**Primary goal:**
-- minimum tokens
-- maximum correctness
-- zero drift
+**Primary goal:** minimum tokens, maximum correctness, zero drift.
 
 ---
 
 ## 2. Canonical Repository Structure
 
 ```
-README.md
-ARCHITECTURE.md
+README.md                              # Product contract + entry point
+ARCHITECTURE.md                        # System layout, boundaries, data flows
+AGENTS.md                              # Agent table of contents (~100 lines)
 
 docs/
-  app-workflows.md
-  dev-workflows.md
-  agent-tools.md        # optional (MCP / tool access)
+  app-workflows.md                     # User journeys
+  dev-workflows.md                     # Engineering workflows
+  agent-tools.md                       # MCP / tool access (optional)
+  QUALITY_SCORE.md                     # Golden principles + quality tracking
+  RELIABILITY.md                       # SLOs, fragile areas, reliability constraints
+  SECURITY.md                          # Trust boundaries, auth, data policies
   features/
     _template.md
     <feature>.md
-
-AGENTS.md
+  product-specs/                       # Broader product specs (cross-cutting)
+    <spec>.md
+  design-docs/                         # Architecture decisions (lightweight ADRs)
+    <decision>.md
+  references/                          # Pinned external knowledge
+    <topic>.md
+  exec-plans/
+    active/
+      <plan>.md
+    completed/
+      <plan>.md
+    tech-debt-tracker.md
 
 # Agent-specific config (create only for the agent in use)
-CLAUDE.md                           # Claude Code only
-.cursorrules                        # Cursor (legacy)
-.cursor/rules/*.mdc                 # Cursor (current)
-.github/copilot-instructions.md     # GitHub Copilot
-
-plans/
-  _template.md
-  YYYY-MM-DD-short-title.md
+CLAUDE.md                              # Claude Code only
+.cursorrules                           # Cursor (legacy)
+.cursor/rules/*.mdc                    # Cursor (current)
+.github/copilot-instructions.md        # GitHub Copilot
 ```
 
 > **Hard Rule:** Agents MUST NOT create new documentation files unless explicitly instructed.
 
-> **Agent Config Rule:** Only create the agent-specific config file for the agent currently being used. Do not create config files for other agents. Note: Codex CLI uses `AGENTS.md` directly—no separate config file needed.
+> **Agent Config Rule:** Only create the agent-specific config file for the agent currently being used. Codex CLI uses `AGENTS.md` directly — no separate config file needed.
 
 ---
 
@@ -63,16 +74,33 @@ Before making changes, agents MUST read docs in this order:
 
 1. `README.md`
 2. `ARCHITECTURE.md`
-3. `docs/features/<feature>.md` (if applicable)
-4. `docs/app-workflows.md`
-5. `docs/dev-workflows.md`
-6. `AGENTS.md`
+3. `AGENTS.md` (table of contents — points to everything else)
+4. `docs/features/<feature>.md` or `docs/product-specs/<spec>.md` (if applicable)
+5. `docs/app-workflows.md`
+6. `docs/dev-workflows.md`
 7. Agent-specific config file (if present)
-8. `docs/agent-tools.md` (only if tools are required)
+8. `docs/QUALITY_SCORE.md` (if making behavioral or structural changes)
+9. `docs/RELIABILITY.md` or `docs/SECURITY.md` (if touching those domains)
+10. `docs/agent-tools.md` (only if tools are required)
 
 ---
 
-## 4. README.md
+## 4. Agent Legibility
+
+All knowledge agents need must live in-repo as versioned markdown.
+
+**Rules:**
+
+- Never rely on Slack, Google Docs, Confluence, Jira, or tribal knowledge
+- If information exists only in an external system, it must be pinned into `docs/references/` as a markdown summary before agents can use it
+- External links are allowed as citations but never as the source of truth
+- Every doc file must be self-contained enough that an agent can act on it without additional context
+
+**Test:** If a fresh agent session cannot find and act on the information, the documentation has failed.
+
+---
+
+## 5. README.md
 
 **Purpose:** product contract + GitHub-quality entry point
 
@@ -85,24 +113,15 @@ Before making changes, agents MUST read docs in this order:
 - Setup instructions
 - Environment variable names (no values)
 - Run commands
-- Test commands:
-  - quick subset
-  - full suite
+- Test commands (quick subset + full suite)
 - Documentation map (links to all core docs)
 - Contribution basics (reference AGENTS.md)
 
-### Tech stack rules (README.md)
+### Tech stack rules
 
-**Allowed:**
-- Languages, frameworks, platforms, services
-- Hosting providers
-- Datastores by type
+**Allowed:** languages, frameworks, platforms, services, hosting, datastores by type
 
-**Disallowed:**
-- DB schemas or tables
-- Deployment topology
-- Secrets
-- Infrastructure scripts
+**Disallowed:** DB schemas, deployment topology, secrets, infrastructure scripts
 
 ### Writing standard
 
@@ -111,7 +130,7 @@ Before making changes, agents MUST read docs in this order:
 
 ---
 
-## 5. ARCHITECTURE.md
+## 6. ARCHITECTURE.md
 
 **Purpose:** system layout, deployments, and data flows
 
@@ -124,20 +143,13 @@ Before making changes, agents MUST read docs in this order:
 - Trust boundaries
 - Data flows
 - Core features list (links to feature docs)
+- References to relevant design docs in `docs/design-docs/`
 
-### Tech stack rules (ARCHITECTURE.md)
+### Tech stack rules
 
-**Allowed:**
-- Hosting targets
-- Service boundaries
-- Logical data entities
-- Event and request flows
+**Allowed:** hosting targets, service boundaries, logical data entities, event and request flows
 
-**Disallowed:**
-- Table-level schemas
-- ORM field lists
-- SQL
-- Migration detail
+**Disallowed:** table-level schemas, ORM field lists, SQL, migration detail
 
 ### Writing standard
 
@@ -146,14 +158,58 @@ Before making changes, agents MUST read docs in this order:
 
 ---
 
-## 6. Feature Docs (`docs/features/<feature>.md`)
+## 7. AGENTS.md (Agent Table of Contents)
+
+**Purpose:** the ~100-line entry point that tells agents how to operate in this repo
+
+AGENTS.md is a **table of contents**, not a manual. It should be concise enough for an agent to read in a single pass and know exactly where to go next.
+
+> **Note:** This file is also used directly by Codex CLI as its configuration file.
+
+### MUST include
+
+#### Repo Purpose (2-3 lines)
+- What this repo is and what it produces
+
+#### Architecture Boundaries (5-10 lines)
+- Key system boundaries agents must respect
+- Link to `ARCHITECTURE.md` for full detail
+
+#### Invariants and Guardrails (10-15 lines)
+- Rules agents must never break (testing, doc updates, PR structure)
+- Testing requirements (TDD guidance, when to run tests)
+- Doc update rules (same-PR requirement)
+
+#### Doc Map (10-15 lines)
+- Pointer to every canonical doc location
+- One line per doc: file path + purpose
+
+#### Planning and Execution (5-10 lines)
+- Where plans live (`docs/exec-plans/active/`)
+- When plans are required
+- Link to `docs/dev-workflows.md` for full process
+
+#### Review Loop (5-10 lines)
+- PR structure requirements
+- What agents must verify before submitting
+
+### Writing standard
+
+- Target ~100 lines total
+- Every line is actionable or a pointer
+- No prose blocks
+- No duplicated rules — point to the source doc instead
+
+---
+
+## 8. Feature Docs (`docs/features/<feature>.md`)
 
 **Purpose:** source of truth for a core feature
 
 ### Required structure
 
 ```markdown
-# Feature: <n>
+# Feature: <name>
 
 ## Purpose
 One sentence describing the problem this feature solves.
@@ -180,7 +236,7 @@ One sentence describing the problem this feature solves.
 - Step 3
 
 ## Edge Cases
-- Case → expected behavior
+- Case -> expected behavior
 
 ## UX States (if applicable)
 - Empty
@@ -189,7 +245,7 @@ One sentence describing the problem this feature solves.
 
 ## Tests
 - Path/to/tests
-- Required cases: happy path + 2–5 edge cases
+- Required cases: happy path + 2-5 edge cases
 - How to run
 
 ## Related Docs
@@ -200,14 +256,9 @@ One sentence describing the problem this feature solves.
 
 ### Feature doc tech rules
 
-**Allowed:**
-- Logical data usage ("writes to primary database")
-- Side effects
+**Allowed:** logical data usage ("writes to primary database"), side effects
 
-**Disallowed:**
-- Table names
-- Field names
-- Indexes
+**Disallowed:** table names, field names, indexes
 
 ### Writing standard
 
@@ -216,7 +267,21 @@ One sentence describing the problem this feature solves.
 
 ---
 
-## 7. App Workflows (`docs/app-workflows.md`)
+## 9. Product Specs (`docs/product-specs/<spec>.md`)
+
+**Purpose:** broader product specifications that go beyond a single feature
+
+Use `docs/product-specs/` when documentation spans multiple features, describes cross-cutting product behavior, or captures product requirements that don't fit a single feature doc.
+
+### Writing standard
+
+- Same rules as feature docs
+- Must link to related feature docs where applicable
+- One spec per product area
+
+---
+
+## 10. App Workflows (`docs/app-workflows.md`)
 
 **Purpose:** user journeys inside the product
 
@@ -234,7 +299,7 @@ One sentence describing the problem this feature solves.
 
 ---
 
-## 8. Dev Workflows (`docs/dev-workflows.md`)
+## 11. Dev Workflows (`docs/dev-workflows.md`)
 
 **Purpose:** how engineering work is done in this repo
 
@@ -258,12 +323,9 @@ One sentence describing the problem this feature solves.
 - Integration: boundaries (HTTP handlers, DB writes, queue jobs)
 - E2E: only highest-value user workflows (few, stable)
 
-**Test placement:**
-- Explicit repo paths
+**Test placement:** explicit repo paths
 
-**Commands:**
-- Quick: relevant subset
-- Full: full suite
+**Commands:** quick (relevant subset), full (full suite)
 
 **When to run:**
 - After behavior change: run relevant subset
@@ -277,7 +339,7 @@ One sentence describing the problem this feature solves.
 
 ---
 
-## 9. Agent Tools (`docs/agent-tools.md`) *(Optional)*
+## 12. Agent Tools (`docs/agent-tools.md`) *(Optional)*
 
 **Purpose:** tool and context access contract (MCP-friendly)
 
@@ -290,80 +352,144 @@ One sentence describing the problem this feature solves.
 
 ---
 
-## 10. AGENTS.md
+## 13. Planning as Code (`docs/exec-plans/`)
 
-**Purpose:** global enforcement rules for coding agents
+**Purpose:** versioned planning artifacts that track work from intent to completion
 
-> **Note:** This file is also used directly by Codex CLI as its configuration file.
+Plans are not throwaway notes. They are versioned artifacts with goals, decisions, progress, and validation criteria.
 
-### MUST include
+### Structure
 
-#### Documentation Rules
+- `docs/exec-plans/active/` — plans currently in progress
+- `docs/exec-plans/completed/` — plans that have been executed and validated
+- `docs/exec-plans/tech-debt-tracker.md` — continuous tracking of known tech debt
 
-- Docs MUST be updated in the same PR as code changes
-- New doc files MUST NOT be created unless explicitly instructed
-- Feature behavior changes → `docs/features/<feature>.md`
-- User flow changes → `docs/app-workflows.md`
-- System boundary changes → `ARCHITECTURE.md`
-- Dev or testing process changes → `docs/dev-workflows.md`
-- Setup or scope changes → `README.md`
+### Plan MUST contain
 
-#### Planning Rules
+- Goal: what this plan achieves
+- Decisions: key choices made and why
+- Steps: ordered execution checklist
+- Validation: how to verify the plan succeeded
+- Progress log: updated as work proceeds
 
-- Multi-file changes require a plan
-- Plans MUST be written to `plans/`
+### When plans are required
 
-#### init.md Handling
+- Multi-file changes
+- New features
+- Refactors
+- Non-trivial assumptions
 
-- `init.md` is not a durable document
-- If generated, contents MUST be merged into:
-  - `README.md`
-  - `ARCHITECTURE.md`
-  - `docs/app-workflows.md`
-- `init.md` MUST NOT be committed
+### Lifecycle
 
-#### Testing Rules (Required)
+1. Create in `active/`
+2. Update progress as work proceeds
+3. Move to `completed/` after validation
+4. Reference in PR
 
-- Tests MUST be added or updated for any behavior change
-- Tests MUST NOT be weakened or bypassed unless explicitly instructed
-- Relevant test subset MUST be run after changes
-- Full test suite MUST be run before PR (or reason documented)
+### Tech Debt Tracker (`docs/exec-plans/tech-debt-tracker.md`)
 
-#### TDD Guidance
-
-**Agents SHOULD use TDD when:**
-- Behavior is well-defined
-- A bug is reproducible
-- Core logic or critical paths are touched
-
-**Agents MAY implement first when:**
-- Work is UI-only
-- Behavior is exploratory
-- No test harness exists yet
-
-> Behavioral changes REQUIRE tests unless explicitly waived.
-
-#### Pull Requests (Single Source of Truth)
-
-- All changes MUST be submitted via PR
-- Agents MUST follow PR structure defined here
-
-**Required PR sections:**
-- Summary
-- Feature doc links (if applicable)
-- Tests run (subset + full)
-- Docs updated (explicit list)
-- Risks / assumptions
-- Manual validation steps
-- Plan reference (if used)
+- Continuous log of known tech debt
+- Each entry: description, impact, proposed resolution, priority
+- Agents update this when they discover or create tech debt
+- Review during planning to avoid compounding debt
 
 ---
 
-## 11. Agent-Specific Config Files *(Conditional)*
+## 14. Quality and Maintenance Docs
+
+### `docs/QUALITY_SCORE.md`
+
+**Purpose:** encode the project's golden principles and track quality over time
+
+### MUST contain
+
+- Shared utilities and abstraction rules
+- Data boundary validation requirements
+- Test coverage expectations
+- Architectural layering rules
+- Quality checklist agents must verify before PR
+
+Agents update this doc when quality standards change or new patterns are established.
+
+### `docs/RELIABILITY.md`
+
+**Purpose:** reliability constraints and operational awareness
+
+### MUST contain
+
+- SLOs and performance targets (if defined)
+- Known fragile areas and mitigation strategies
+- Graceful degradation requirements
+- Monitoring and alerting expectations
+
+### `docs/SECURITY.md`
+
+**Purpose:** security policies agents must follow
+
+### MUST contain
+
+- Trust boundaries (what talks to what, with what permissions)
+- Authentication and authorization model
+- Data handling policies (PII, encryption, retention)
+- Security-sensitive code paths
+- Dependency security requirements
+
+---
+
+## 15. Design Docs (`docs/design-docs/`)
+
+**Purpose:** record architecture decisions and significant design choices
+
+### Structure (lightweight ADR)
+
+```markdown
+# Decision: <title>
+
+## Context
+What problem or situation prompted this decision.
+
+## Decision
+What was decided.
+
+## Consequences
+- What this enables
+- What this constrains
+- Trade-offs accepted
+```
+
+### Rules
+
+- One doc per significant decision
+- Referenced from ARCHITECTURE.md
+- Not retroactive — only create for new decisions going forward
+- Agents create design docs when making architectural choices that affect system boundaries
+
+---
+
+## 16. References (`docs/references/`)
+
+**Purpose:** pinned external knowledge that agents need
+
+### When to use
+
+- External API documentation that agents must reference
+- Third-party service constraints or configuration
+- Standards or specifications the project must comply with
+
+### Rules
+
+- Each file is a markdown summary of external knowledge
+- Include source URL as a citation
+- Keep concise — only what's needed for agent execution
+- Update when external sources change
+
+---
+
+## 17. Agent-Specific Config Files *(Conditional)*
 
 **Purpose:** tool-specific operating constraints for a particular coding agent
 
-> **Rule:** Only create the config file for the agent currently in use. Do not create files for other agents.
+> **Rule:** Only create the config file for the agent currently in use.
 
 ### Supported agents and config locations
 
@@ -378,57 +504,40 @@ One sentence describing the problem this feature solves.
 
 - Follow AGENTS.md at all times
 - Required doc read order
-- Plan location (`plans/`)
+- Plan location (`docs/exec-plans/active/`)
 - Exact test commands
 - Diff discipline
 
 ### Writing standard
 
-- 10–20 lines max
+- 10-20 lines max
 - No policy duplication
 - Reference AGENTS.md for shared rules
 
 ---
 
-## 12. Plans (`plans/`)
-
-**Purpose:** temporary task-level reasoning
-
-### Allowed
-
-- Multi-file plans
-- New feature plans
-- Refactor plans
-
-### Disallowed
-
-- Feature behavior
-- Architecture decisions
-- User workflows
-
-**Plans:**
-- Referenced in PRs
-- Optional to keep post-merge
-- Never a source of truth
-
----
-
-## 13. Doc Update Mapping (Non-Negotiable)
+## 18. Doc Update Mapping (Non-Negotiable)
 
 When code changes, agents MUST update:
 
 | Change Type | Update Location |
 |-------------|-----------------|
 | Feature logic, inputs, outputs, tests | `docs/features/<feature>.md` |
+| Cross-cutting product behavior | `docs/product-specs/<spec>.md` |
 | User journeys | `docs/app-workflows.md` |
 | System layout, deployments, integrations | `ARCHITECTURE.md` |
 | Dev or testing process | `docs/dev-workflows.md` |
+| Architecture decisions | `docs/design-docs/<decision>.md` |
+| Quality standards or patterns | `docs/QUALITY_SCORE.md` |
+| Reliability constraints or SLOs | `docs/RELIABILITY.md` |
+| Security policies or trust boundaries | `docs/SECURITY.md` |
 | Setup or tech stack summary | `README.md` |
-| Temporary reasoning | `plans/` |
+| Active work plans | `docs/exec-plans/active/` |
+| Known tech debt | `docs/exec-plans/tech-debt-tracker.md` |
 
 ---
 
-## 14. Documentation Writing Rules (Token-Efficient)
+## 19. Documentation Writing Rules (Token-Efficient)
 
 All docs MUST follow:
 
