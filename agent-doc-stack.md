@@ -20,6 +20,7 @@ Documentation exists so coding agents can operate autonomously within defined bo
 - Documentation must use progressive disclosure: short entrypoints point to deep docs
 - Tests are the executable contract for behavior
 - Agents must always know: what to read, where to write, what to update
+- **DRY docs: define every fact once, in one canonical location, and link everywhere else** — if information appears in two places, one of them is wrong (or will be soon)
 
 **Primary goal:** minimum tokens, maximum correctness, zero drift.
 
@@ -28,6 +29,7 @@ Documentation exists so coding agents can operate autonomously within defined bo
 ## 2. Canonical Repository Structure
 
 ```
+# === Required (always create) ===
 README.md                              # Product contract + entry point
 ARCHITECTURE.md                        # System layout, boundaries, data flows
 AGENTS.md                              # Agent table of contents (~100 lines)
@@ -35,19 +37,9 @@ AGENTS.md                              # Agent table of contents (~100 lines)
 docs/
   app-workflows.md                     # User journeys
   dev-workflows.md                     # Engineering workflows
-  agent-tools.md                       # MCP / tool access (optional)
-  QUALITY_SCORE.md                     # Golden principles + quality tracking
-  RELIABILITY.md                       # SLOs, fragile areas, reliability constraints
-  SECURITY.md                          # Trust boundaries, auth, data policies
   features/
     _template.md
     <feature>.md
-  product-specs/                       # Broader product specs (cross-cutting)
-    <spec>.md
-  design-docs/                         # Architecture decisions (lightweight ADRs)
-    <decision>.md
-  references/                          # Pinned external knowledge
-    <topic>.md
   exec-plans/
     active/
       <plan>.md
@@ -55,7 +47,19 @@ docs/
       <plan>.md
     tech-debt-tracker.md
 
-# Agent-specific config (create only for the agent in use)
+# === Create-on-need (only when you have concrete content) ===
+  agent-tools.md                       # MCP / tool access
+  QUALITY_SCORE.md                     # Golden principles + quality tracking
+  RELIABILITY.md                       # SLOs, fragile areas, reliability constraints
+  SECURITY.md                          # Trust boundaries, auth, data policies
+  product-specs/                       # Cross-cutting product specs
+    <spec>.md
+  design-docs/                         # Architecture decisions (lightweight ADRs)
+    <decision>.md
+  references/                          # Pinned external knowledge
+    <topic>.md
+
+# === Agent-specific config (create only for the agent in use) ===
 CLAUDE.md                              # Claude Code only
 .cursorrules                           # Cursor (legacy)
 .cursor/rules/*.mdc                    # Cursor (current)
@@ -545,5 +549,6 @@ All docs MUST follow:
 - Only update affected sections
 - No rewording unchanged content
 - No rationale unless required for correctness
+- Define every fact once — link, don't repeat
 
-> **Golden rule:** As short as possible, but precise enough to prevent ambiguity.
+> **Golden Rule:** Define once, link everywhere. As short as possible, but precise enough to prevent ambiguity. If a fact lives in two files, delete one and replace it with a link.
