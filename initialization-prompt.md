@@ -14,14 +14,16 @@ This specification is authoritative. You MUST follow it strictly — all rules f
 
 ## Your Task
 
-Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.0 specification.
+Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.1 specification.
 
 Your objectives:
 
 - Place durable truth in the correct canonical files (see spec section 2 for structure)
 - Remove ambiguity, duplication, and drift
-- Minimize tokens while maximizing correctness
+- Minimize tokens while maximizing correctness — respect size targets per doc type (see each section's **Size target**)
 - Ensure future agents can safely operate in this repo
+- Point to canonical exemplar files in code rather than duplicating code in docs
+- Don't document what linters, type systems, or frameworks already enforce (see spec section 19)
 
 ---
 
@@ -89,6 +91,22 @@ Key reminders:
 - Only create the agent-specific config file for the agent you are (see spec section 17)
 - `AGENTS.md` must be a ~100-line table of contents, not a manual (see spec section 7)
 - If work involves multiple files or non-trivial assumptions, write a plan to `docs/exec-plans/active/` first (see spec section 13)
+- Feature docs must include a **Verification** section with exact test commands agents can run (see spec section 8)
+- Feature docs and ARCHITECTURE.md must include **Canonical Files** — pointers to exemplar implementations (see spec sections 6, 8)
+- Product specs use their own template distinct from feature docs — include Scope, Features Involved, User Personas, Cross-Cutting Behaviors (see spec section 9)
+- Respect **size targets** for each doc type — if a doc exceeds its budget, split content into linked sub-docs
+- Add `<!-- last_verified: YYYY-MM-DD -->` to the top of each doc for staleness tracking (see spec section 18)
+
+---
+
+## Step 5: Handle Monorepos and Multi-Service Repos
+
+If the repository contains multiple packages, services, or distinct modules:
+
+- Root-level docs cover repo-wide concerns
+- Each package/service MAY have its own scoped `AGENTS.md`, `ARCHITECTURE.md`, or agent config file (see spec section 2)
+- Subdirectory docs supplement root docs — they don't replace shared rules
+- When in doubt about scoping, ask before creating nested docs
 
 ---
 
@@ -98,8 +116,14 @@ You are finished when:
 
 - All required documentation exists in the correct locations per the spec
 - Existing documentation has been preserved and relocated appropriately
-- Each document follows the spec's writing standards (section 19)
+- Each document follows the spec's writing standards and anti-patterns (section 19)
+- Each document is within its size target (see each section's **Size target**)
 - `AGENTS.md` is a ~100-line table of contents pointing to deep docs
+- Feature docs include **Canonical Files** and **Verification** sections with exact commands
+- ARCHITECTURE.md includes canonical file references for major patterns
+- Product specs use the dedicated template (section 9), not the feature doc format
+- `<!-- last_verified: YYYY-MM-DD -->` headers are present on all docs
 - Cross-links between documents are correct
 - No speculative, duplicate, or orphan documentation remains
+- Docs don't restate what linters, type systems, or frameworks already enforce
 - A fresh agent session could read `AGENTS.md` and know where to go for any task

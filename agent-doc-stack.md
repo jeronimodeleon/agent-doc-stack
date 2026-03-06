@@ -1,4 +1,4 @@
-# Agent Doc Stack v2.0
+# Agent Doc Stack v2.1
 
 A contract-based, agent-first documentation system for AI-assisted application development
 
@@ -21,6 +21,8 @@ Documentation exists so coding agents can operate autonomously within defined bo
 - Tests are the executable contract for behavior
 - Agents must always know: what to read, where to write, what to update
 - **DRY docs: define every fact once, in one canonical location, and link everywhere else** — if information appears in two places, one of them is wrong (or will be soon)
+- **Token budgets matter** — every doc has a size target; agent performance degrades as context fills, so keep docs within their budgets
+- **Don't document what tools enforce** — if linters, type checkers, or frameworks already enforce it, don't repeat it in docs
 
 **Primary goal:** minimum tokens, maximum correctness, zero drift.
 
@@ -70,6 +72,15 @@ CLAUDE.md                              # Claude Code only
 
 > **Agent Config Rule:** Only create the agent-specific config file for the agent currently being used. Codex CLI uses `AGENTS.md` directly — no separate config file needed.
 
+### Nested docs for larger repos (monorepos, multi-service)
+
+For repositories with multiple packages, services, or distinct modules, subdirectory-scoped docs are allowed:
+
+- Each package/service MAY have its own `AGENTS.md`, `ARCHITECTURE.md`, or agent config file
+- Subdirectory docs **supplement** the root docs — they add specificity, not replace shared rules
+- When root and subdirectory docs conflict, the **most-specific doc wins** and the conflict should be flagged for resolution
+- Keep the root-level docs as the canonical entry point; subdirectory docs handle local concerns only
+
 ---
 
 ## 3. Required Reading Order for Coding Agents
@@ -86,6 +97,14 @@ Before making changes, agents MUST read docs in this order:
 8. `docs/QUALITY_SCORE.md` (if making behavioral or structural changes)
 9. `docs/RELIABILITY.md` or `docs/SECURITY.md` (if touching those domains)
 10. `docs/agent-tools.md` (only if tools are required)
+
+### Conflict resolution
+
+When two docs contradict each other:
+
+- **Most-specific doc wins** — a feature doc overrides ARCHITECTURE.md for that feature's behavior
+- **Subdirectory docs override root docs** for their scope (see section 2)
+- Agent MUST flag the conflict in its PR so humans can reconcile the source docs
 
 ---
 
@@ -107,6 +126,8 @@ All knowledge agents need must live in-repo as versioned markdown.
 ## 5. README.md
 
 **Purpose:** product contract + GitHub-quality entry point
+
+**Size target:** ~150 lines max
 
 ### MUST contain
 
@@ -138,6 +159,8 @@ All knowledge agents need must live in-repo as versioned markdown.
 
 **Purpose:** system layout, deployments, and data flows
 
+**Size target:** ~200 lines max
+
 ### MUST contain
 
 - Components and responsibilities
@@ -147,6 +170,7 @@ All knowledge agents need must live in-repo as versioned markdown.
 - Trust boundaries
 - Data flows
 - Core features list (links to feature docs)
+- Canonical file references — pointer to one exemplar file per major pattern (e.g., "Canonical API handler: `src/handlers/users.ts`")
 - References to relevant design docs in `docs/design-docs/`
 
 ### Tech stack rules
@@ -210,6 +234,8 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 
 **Purpose:** source of truth for a core feature
 
+**Size target:** ~80 lines max per feature doc
+
 ### Required structure
 
 ```markdown
@@ -226,6 +252,9 @@ One sentence describing the problem this feature solves.
 ## Core Functions
 - function_or_module_a
 - function_or_module_b
+
+## Canonical Files
+- Pattern exemplar: `path/to/canonical/implementation`
 
 ## Inputs
 - name: type (source)
@@ -247,10 +276,12 @@ One sentence describing the problem this feature solves.
 - Loading
 - Error
 
-## Tests
-- Path/to/tests
+## Verification
+- Test files: `path/to/tests`
 - Required cases: happy path + 2-5 edge cases
-- How to run
+- Quick verify command: `<exact command to run this feature's tests>`
+- Full verify command: `<exact command to run full suite>`
+- Pass criteria: what "green" looks like for this feature
 
 ## Related Docs
 - README.md
@@ -273,14 +304,46 @@ One sentence describing the problem this feature solves.
 
 ## 9. Product Specs (`docs/product-specs/<spec>.md`)
 
-**Purpose:** broader product specifications that go beyond a single feature
+**Purpose:** cross-cutting product behavior that spans multiple features
 
 Use `docs/product-specs/` when documentation spans multiple features, describes cross-cutting product behavior, or captures product requirements that don't fit a single feature doc.
 
+**Size target:** ~120 lines max per spec
+
+### Required structure
+
+```markdown
+# Spec: <name>
+
+## Scope
+Which features and systems this spec covers.
+
+## Features Involved
+- [Feature A](../features/feature-a.md)
+- [Feature B](../features/feature-b.md)
+
+## User Personas Affected
+- Persona -> how they're impacted
+
+## Cross-Cutting Behaviors
+- Behavior description -> which features implement it
+- Shared constraints that apply across features
+
+## Business Rules
+- Rule -> enforcement mechanism
+
+## Constraints
+- Performance, compliance, or UX constraints that span features
+
+## Verification
+- How to validate cross-feature behavior end-to-end
+- Exact commands if applicable
+```
+
 ### Writing standard
 
-- Same rules as feature docs
-- Must link to related feature docs where applicable
+- Bullets only
+- Must link to related feature docs — never duplicate feature-level detail
 - One spec per product area
 
 ---
@@ -288,6 +351,8 @@ Use `docs/product-specs/` when documentation spans multiple features, describes 
 ## 10. App Workflows (`docs/app-workflows.md`)
 
 **Purpose:** user journeys inside the product
+
+**Size target:** ~150 lines max
 
 ### MUST contain
 
@@ -306,6 +371,8 @@ Use `docs/product-specs/` when documentation spans multiple features, describes 
 ## 11. Dev Workflows (`docs/dev-workflows.md`)
 
 **Purpose:** how engineering work is done in this repo
+
+**Size target:** ~150 lines max
 
 ### MUST contain
 
@@ -353,6 +420,10 @@ Use `docs/product-specs/` when documentation spans multiple features, describes 
 - Local vs CI access
 - Security boundaries
 - MCP usage notes
+
+### Agent skills and custom commands
+
+Most coding agents support reusable skills or custom commands (e.g., Claude Code's `.claude/commands/`, Codex's `.agents/skills/`, Cursor's `.cursor/plans/`). These are **agent-specific features** — use each agent's native format and directory structure rather than defining a shared location. If skills are in use, document their existence and purpose in this file so other agents or humans know they're available.
 
 ---
 
@@ -499,10 +570,22 @@ What was decided.
 
 | Agent | Config File | Notes |
 |-------|-------------|-------|
-| Claude Code | `CLAUDE.md` | Project root |
-| Codex CLI | `AGENTS.md` | Uses the shared AGENTS.md file directly |
-| Cursor | `.cursorrules` or `.cursor/rules/*.mdc` | `.cursorrules` is legacy; `.mdc` files are current |
+| Claude Code | `CLAUDE.md` | Project root; supports nested `CLAUDE.md` in subdirectories |
+| Codex CLI | `AGENTS.md` | Uses the shared AGENTS.md file directly; supports `AGENTS.override.md` per directory |
+| Cursor | `.cursor/rules/*.mdc` | `.mdc` files scoped by glob; `.cursorrules` is legacy |
+| Gemini CLI | `GEMINI.md` or `AGENT.md` | Project root; supports nested files in subdirectories |
 | GitHub Copilot | `.github/copilot-instructions.md` | Inside `.github/` directory |
+
+### Nested agent config (for larger repos)
+
+All major agents support hierarchical config discovery — subdirectory configs supplement or override root configs:
+
+- **Claude Code**: nested `CLAUDE.md` files add scoped context per directory
+- **Codex CLI**: walks from git root to CWD, merging `AGENTS.md` at each level; `AGENTS.override.md` takes precedence at the same level
+- **Cursor**: `.mdc` rules can be scoped to specific file patterns via globs
+- **Gemini**: nested `GEMINI.md` files override general context with specific context
+
+Use nested configs when distinct modules, services, or packages need different conventions. Keep root-level config for repo-wide rules.
 
 ### MUST include (for agent-specific files)
 
@@ -539,6 +622,15 @@ When code changes, agents MUST update:
 | Active work plans | `docs/exec-plans/active/` |
 | Known tech debt | `docs/exec-plans/tech-debt-tracker.md` |
 
+### Staleness detection
+
+Docs drift when code changes but docs don't. Use one or more of these mechanisms to catch it:
+
+- **Header timestamp**: add `<!-- last_verified: YYYY-MM-DD -->` to the top of each doc; agents update this when they verify or modify the doc
+- **CI check** (recommended): compare modification dates of doc files against their related source files; flag docs that haven't been updated since related code changed
+- **Agent pre-task check**: before starting work, agents should verify that the docs they read are consistent with the code they see; if not, flag the drift before proceeding
+- **References are highest-risk**: `docs/references/` files summarize external sources that change independently — review these on a regular cadence
+
 ---
 
 ## 19. Documentation Writing Rules (Token-Efficient)
@@ -550,5 +642,15 @@ All docs MUST follow:
 - No rewording unchanged content
 - No rationale unless required for correctness
 - Define every fact once — link, don't repeat
+- Reference canonical files instead of copying code into docs — keeps docs short and prevents staleness
 
 > **Golden Rule:** Define once, link everywhere. As short as possible, but precise enough to prevent ambiguity. If a fact lives in two files, delete one and replace it with a link.
+
+### What NOT to document
+
+- **Linter/formatter rules** — if ESLint, Prettier, Ruff, etc. enforce it, don't restate it in docs
+- **Type system guarantees** — if TypeScript, Go, or Rust enforce a constraint, the types are the doc
+- **Framework defaults** — don't document behavior that's standard for the framework in use
+- **Obvious conventions** — if the codebase consistently follows a pattern, agents will infer it from code; only document deviations or non-obvious choices
+- **Historical context** — don't explain why old decisions were made unless it constrains future decisions (use `docs/design-docs/` for that)
+- **Edge cases that can't happen** — don't document impossible states or scenarios the type system prevents

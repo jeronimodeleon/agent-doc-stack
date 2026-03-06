@@ -18,7 +18,7 @@ Agent Doc Stack defines:
 
 This is a **specification**, not a template or a tool.
 
-Works with Claude Code, Codex CLI, Cursor, and Copilot Agent.
+Works with Claude Code, Codex CLI, Cursor, Gemini CLI, and Copilot Agent.
 
 ---
 
@@ -26,7 +26,7 @@ Works with Claude Code, Codex CLI, Cursor, and Copilot Agent.
 
 | File | Purpose |
 |------|---------|
-| `agent-doc-stack.md` | The authoritative v2.0 specification — single source of truth for all structure, rules, and canonical file locations |
+| `agent-doc-stack.md` | The authoritative v2.1 specification — single source of truth for all structure, rules, and canonical file locations |
 | `initialization-prompt.md` | Reusable prompt to initialize or normalize a repo's documentation using the spec |
 
 ---
@@ -57,7 +57,7 @@ As coding agents take on more responsibility, documentation must be:
 
 ## Versioning
 
-- Current version: **v2.0** (defined in `agent-doc-stack.md`)
+- Current version: **v2.1** (defined in `agent-doc-stack.md`)
 - Patch: clarify wording, no behavior change
 - Minor: add rules, backward compatible
 - Major: breaking changes
