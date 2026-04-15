@@ -4,6 +4,8 @@ A contract-based, agent-first documentation specification for AI-assisted softwa
 
 **Humans steer. Agents execute.**
 
+Agent Doc Stack is the **documentation layer of your agent harness** — the structured, in-repo context that determines whether a coding agent can operate safely and productively. Harness engineering spans context, tools, rules, and memory; this spec focuses on context: giving agents a predictable, DRY, token-efficient set of docs to read before they act.
+
 ---
 
 ## What This Is
@@ -26,7 +28,7 @@ Works with Claude Code, Codex CLI, Cursor, Gemini CLI, and Copilot Agent.
 
 | File | Purpose |
 |------|---------|
-| `agent-doc-stack.md` | The authoritative v2.1 specification — single source of truth for all structure, rules, and canonical file locations |
+| `agent-doc-stack.md` | The authoritative v2.2 specification — single source of truth for all structure, rules, and canonical file locations |
 | `initialization-prompt.md` | Reusable prompt to initialize or normalize a repo's documentation using the spec |
 
 ---
@@ -57,7 +59,7 @@ As coding agents take on more responsibility, documentation must be:
 
 ## Versioning
 
-- Current version: **v2.1** (defined in `agent-doc-stack.md`)
+- Current version: **v2.2** (defined in `agent-doc-stack.md`)
 - Patch: clarify wording, no behavior change
 - Minor: add rules, backward compatible
 - Major: breaking changes

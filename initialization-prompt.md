@@ -14,7 +14,7 @@ This specification is authoritative. You MUST follow it strictly — all rules f
 
 ## Your Task
 
-Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.1 specification.
+Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.2 specification.
 
 Your objectives:
 

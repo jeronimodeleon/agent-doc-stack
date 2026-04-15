@@ -1,4 +1,4 @@
-# Agent Doc Stack v2.1
+# Agent Doc Stack v2.2
 
 A contract-based, agent-first documentation system for AI-assisted application development
 
@@ -34,7 +34,7 @@ Documentation exists so coding agents can operate autonomously within defined bo
 # === Required (always create) ===
 README.md                              # Product contract + entry point
 ARCHITECTURE.md                        # System layout, boundaries, data flows
-AGENTS.md                              # Agent table of contents (~100 lines)
+AGENTS.md                              # Agent table of contents (~120 lines)
 
 docs/
   app-workflows.md                     # User journeys
@@ -83,20 +83,26 @@ For repositories with multiple packages, services, or distinct modules, subdirec
 
 ---
 
-## 3. Required Reading Order for Coding Agents
+## 3. Required Reading for Coding Agents
 
-Before making changes, agents MUST read docs in this order:
+Agents MUST read `AGENTS.md` before making any change. It is the table of contents and the only forced read.
 
-1. `README.md`
-2. `ARCHITECTURE.md`
-3. `AGENTS.md` (table of contents — points to everything else)
-4. `docs/features/<feature>.md` or `docs/product-specs/<spec>.md` (if applicable)
-5. `docs/app-workflows.md`
-6. `docs/dev-workflows.md`
-7. Agent-specific config file (if present)
-8. `docs/QUALITY_SCORE.md` (if making behavioral or structural changes)
-9. `docs/RELIABILITY.md` or `docs/SECURITY.md` (if touching those domains)
-10. `docs/agent-tools.md` (only if tools are required)
+Every other doc is pulled on demand, based on the task:
+
+| Task | Pull |
+|------|------|
+| Understand the product | `README.md` |
+| Touch system boundaries, deployments, or data flow | `ARCHITECTURE.md` |
+| Change a feature's behavior, inputs, outputs, or tests | `docs/features/<feature>.md` |
+| Work that spans multiple features | `docs/product-specs/<spec>.md` |
+| Change a user journey | `docs/app-workflows.md` |
+| Change engineering or testing process | `docs/dev-workflows.md` |
+| Behavioral or structural change | `docs/QUALITY_SCORE.md` |
+| Touch reliability or security domains | `docs/RELIABILITY.md`, `docs/SECURITY.md` |
+| Tool or MCP access needed | `docs/agent-tools.md` |
+| Agent-specific operating rules apply | Agent config file (if present) |
+
+`AGENTS.md` lists every doc path so agents can find them without guessing.
 
 ### Conflict resolution
 
@@ -188,13 +194,17 @@ All knowledge agents need must live in-repo as versioned markdown.
 
 ## 7. AGENTS.md (Agent Table of Contents)
 
-**Purpose:** the ~100-line entry point that tells agents how to operate in this repo
+**Purpose:** the ~120-line entry point that tells agents how to operate in this repo
 
 AGENTS.md is a **table of contents**, not a manual. It should be concise enough for an agent to read in a single pass and know exactly where to go next.
 
 > **Note:** This file is also used directly by Codex CLI as its configuration file.
 
 ### MUST include
+
+#### Quick Verify (1 line, top of file)
+- `Quick verify: <exact command to run the fast test subset>`
+- The single highest-frequency command agents will run. Keep it at the top so it's visible without scrolling.
 
 #### Repo Purpose (2-3 lines)
 - What this repo is and what it produces
@@ -223,7 +233,7 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 
 ### Writing standard
 
-- Target ~100 lines total
+- Target ~120 lines total
 - Every line is actionable or a pointer
 - No prose blocks
 - No duplicated rules — point to the source doc instead
@@ -449,10 +459,11 @@ Plans are not throwaway notes. They are versioned artifacts with goals, decision
 
 ### When plans are required
 
-- Multi-file changes
 - New features
-- Refactors
-- Non-trivial assumptions
+- Data model changes
+- User explicitly requests a plan
+
+Plans are optional for small multi-file edits, bugfixes, and routine refactors. Use judgment — a plan should clarify work, not add ceremony.
 
 ### Lifecycle
 
@@ -589,17 +600,15 @@ Use nested configs when distinct modules, services, or packages need different c
 
 ### MUST include (for agent-specific files)
 
-- Follow AGENTS.md at all times
-- Required doc read order
+- "Follow AGENTS.md" — single line
+- Quick verify command (copy from AGENTS.md)
 - Plan location (`docs/exec-plans/active/`)
-- Exact test commands
-- Diff discipline
 
 ### Writing standard
 
-- 10-20 lines max
-- No policy duplication
-- Reference AGENTS.md for shared rules
+- ≤10 lines — pointer only, not a manual
+- No policy, no rules, no duplication of AGENTS.md
+- If you need to add rules, add them to AGENTS.md instead
 
 ---
 
