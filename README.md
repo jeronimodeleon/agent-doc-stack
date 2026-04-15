@@ -6,46 +6,78 @@ A contract-based, agent-first documentation specification for AI-assisted softwa
 
 ---
 
-## Why harness engineering needs a documentation layer
+## The context layer of the harness
 
-As coding agents take on more of the software lifecycle, the job of engineering shifts from writing code to designing the environment the agent operates in. That environment — the *harness* — is the set of systems that shape how the agent thinks and acts: the context it loads, the tools it can call, the rules it must follow, and the memory it carries across sessions.
-
-A harness is only as good as its weakest layer. You can hand an agent the strongest model, the best tools, and a clean sandbox — and still get poor results if the agent can't answer, from inside the repository, three questions before it starts work:
+A coding agent's harness is the environment that shapes how it operates: the context it loads, the tools it can call, the rules it follows, the memory it carries. A harness is only as good as its weakest layer — the strongest model and cleanest sandbox still produce poor output if the agent can't answer three questions from inside the repository before it starts work:
 
 1. **What is this system and what does it do?**
 2. **Where do I look when I need to change X?**
-3. **What are the rules I must not break?**
+3. **What rules must I not break?**
 
-Every question the agent can't answer in-repo becomes a prompt the human has to write, a mistake the reviewer has to catch, or a hallucination that ships.
+Every question the agent can't answer in-repo becomes a prompt a human writes, a mistake a reviewer catches, or a hallucination that ships. Agent Doc Stack is the context layer that answers those three questions deterministically, without external lookups and without burning the context window on irrelevant prose.
 
-Agent Doc Stack is the **context layer of the harness** — the structured, repo-local documentation that lets an agent answer those three questions without guessing, without external lookups, and without re-ingesting a wall of prose on every task.
+The spec is built on four principles that keep surfacing across teams running coding agents at scale:
 
----
-
-## The design principles
-
-Agent Doc Stack is built on four ideas that have converged across teams running coding agents at scale:
-
-- **Repo-local or it doesn't exist.** Slack threads, Confluence pages, and tribal knowledge are invisible to agents. If it isn't committed, it isn't real.
-- **Progressive disclosure over information dumping.** Agents read a short entry point (`AGENTS.md`) and *navigate* to deeper docs only when the task requires them. Context windows are finite; spending them on irrelevant rules degrades output.
-- **Define once, link everywhere.** Every fact lives in exactly one canonical location. Duplicated facts drift, and drift silently poisons agent behavior.
-- **Contracts, not prose.** Docs are structured so an agent can act on them — bullets, templates, exact commands, canonical file references. Explanations belong in commit messages and PRs, not in durable docs.
-
-These are the same principles that emerge in public write-ups from teams shipping agent-generated production code. Agent Doc Stack codifies them into a specification so any team can adopt them without reinventing the structure.
+- **Repo-local or it doesn't exist.** Slack, Confluence, and tribal knowledge are invisible to agents. If it isn't committed, it isn't real.
+- **Progressive disclosure.** One short entry point; deeper docs pulled only when the task demands them. Context windows are finite.
+- **Define once, link everywhere.** Duplicated facts drift, and drift silently poisons agent behavior.
+- **Contracts, not prose.** Bullets, templates, exact commands, canonical file references — structured so the agent can act on them.
 
 ---
 
-## How it works
+## What the spec produces
 
-Agent Doc Stack is a specification for **where docs live**, **what each doc contains**, and **which doc the agent reads when**. It is not a tool, not a template, and not a library.
+Agent Doc Stack lays down a predictable repository shape. `AGENTS.md` is the ~120-line entry point every agent reads first; everything else is pulled on demand.
 
-The mental model is a two-layer system:
+```
+repo-root/
+├── README.md                          # product contract, setup, commands
+├── ARCHITECTURE.md                    # system layout, boundaries, data flows
+├── AGENTS.md                          # ~120-line table of contents (the only forced read)
+│
+├── docs/
+│   ├── app-workflows.md               # user journeys
+│   ├── dev-workflows.md               # engineering workflows (testing, PRs, bugfix loop)
+│   │
+│   ├── features/                      # one file per core feature
+│   │   ├── _template.md
+│   │   └── <feature>.md
+│   │
+│   ├── exec-plans/                    # planning as code
+│   │   ├── active/                    # in-progress plans
+│   │   ├── completed/                 # validated, archived plans
+│   │   └── tech-debt-tracker.md
+│   │
+│   ├── product-specs/        (on need) # cross-cutting product behavior
+│   ├── design-docs/          (on need) # lightweight ADRs
+│   ├── references/           (on need) # pinned external knowledge
+│   ├── agent-tools.md        (on need) # MCP / tool access contract
+│   ├── QUALITY_SCORE.md      (on need) # golden principles, quality tracking
+│   ├── RELIABILITY.md        (on need) # SLOs, fragile areas
+│   └── SECURITY.md           (on need) # trust boundaries, auth, data policy
+│
+└── <agent-config>                     # only the one you use:
+                                       #   CLAUDE.md  |  .cursor/rules/*.mdc
+                                       #   GEMINI.md  |  .github/copilot-instructions.md
+                                       # Codex CLI uses AGENTS.md directly
+```
 
-**Layer 1 — the entry point.** A single file, `AGENTS.md` (~120 lines), is the only forced read for the agent. It contains a quick-verify command, repo purpose, architecture boundaries, invariants, a doc map, and planning/review rules. Nothing else. It is a table of contents, not a manual.
+**Required docs** (`README`, `ARCHITECTURE`, `AGENTS`, `app-workflows`, `dev-workflows`, `features/`, `exec-plans/`) are always created. **Create-on-need docs** are added only when you have concrete content — the spec explicitly discourages empty scaffolding.
 
-**Layer 2 — the deep docs.** Everything else lives in predictable, canonical locations under `docs/`: feature specs, product specs, design decisions, execution plans, quality and reliability constraints, and pinned external references. Each has a size target, a required structure, and a clear purpose. The agent pulls from these only when the task demands it.
+Every doc has a size target, a required structure, and a clear purpose defined in the spec.
 
-The result is that a coding agent — Claude Code, Codex CLI, Cursor, Gemini CLI, Copilot Agent, or any future successor — can walk into the repository, read ~120 lines, and know exactly where to go for anything it needs. When it makes a change, it knows exactly which doc to update.
+---
+
+## How an agent uses it
+
+When an agent enters the repository, its read path is deterministic:
+
+1. **Read `AGENTS.md`** — always, every task. This is the only forced read.
+2. **Identify the task type** — feature change, architecture change, workflow change, etc.
+3. **Pull the matching deep doc** from the locations above (the spec provides a task → doc lookup table).
+4. **Make the change.** When the change lands, the same lookup tells the agent which doc to update in the same PR.
+
+This replaces the common failure mode where agents either ingest every doc upfront (burning context) or skip the docs entirely (shipping drift). The spec works across Claude Code, Codex CLI, Cursor, Gemini CLI, and Copilot Agent because the structure — not the agent — is the contract.
 
 ---
 
