@@ -14,7 +14,7 @@ This specification is authoritative. You MUST follow it strictly — all rules f
 
 ## Your Task
 
-Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.2 specification.
+Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.3 specification.
 
 Your objectives:
 
@@ -24,6 +24,7 @@ Your objectives:
 - Ensure future agents can safely operate in this repo
 - Point to canonical exemplar files in code rather than duplicating code in docs
 - Don't document what linters, type systems, or frameworks already enforce (see spec section 19)
+- Write instructions, not overviews — explicit, repo-specific rules help agents; generic repo overviews add tokens without improving results
 
 ---
 
@@ -31,6 +32,9 @@ Your objectives:
 
 - DO NOT invent product behavior, features, architecture, workflows, or requirements
 - DO NOT guess when information is missing or unclear
+- DO NOT generate `AGENTS.md` invariants or guardrails. Source each one from existing docs, config, or code (lint rules, CI, test setup), or ask the human. If a rule can't be sourced, leave it out.
+- DO NOT write generic overviews in `AGENTS.md` or content beyond what the spec requires. If a line wouldn't change what an agent does, cut it.
+- DO NOT create Agent Skills (`SKILL.md`), custom commands, or agent config files beyond what the spec allows (see spec sections 12, 17). Skills are never created during initialization.
 - If required information is unavailable:
   - STOP
   - Ask clear, targeted questions
@@ -89,13 +93,14 @@ Key reminders:
 
 - Only create **required** docs always; create **create-on-need** docs only when you have concrete content (see spec section 2 for the distinction)
 - Only create the agent-specific config file for the agent you are (see spec section 17)
-- `AGENTS.md` must be a ~100-line table of contents, not a manual (see spec section 7)
+- `AGENTS.md` must be a ~120-line table of contents, not a manual, in the section order defined in spec section 7. The Doc Map lists root docs and single-file docs, and collection directories as directories — not every file
 - If work involves multiple files or non-trivial assumptions, write a plan to `docs/exec-plans/active/` first (see spec section 13)
 - Feature docs must include a **Verification** section with exact test commands agents can run (see spec section 8)
 - Feature docs and ARCHITECTURE.md must include **Canonical Files** — pointers to exemplar implementations (see spec sections 6, 8)
 - Product specs use their own template distinct from feature docs — include Scope, Features Involved, User Personas, Cross-Cutting Behaviors (see spec section 9)
 - Respect **size targets** for each doc type — if a doc exceeds its budget, split content into linked sub-docs
-- Add `<!-- last_verified: YYYY-MM-DD -->` to the top of each doc for staleness tracking (see spec section 18)
+- Add OKF-compatible frontmatter (`type`, `description`) to collection docs only — see spec section 19 for types and exclusions. Do not create `index.md` or `log.md`
+- Add `<!-- last_verified: YYYY-MM-DD -->` to every doc except agent config files, for staleness tracking — at the top; on line 2 of `AGENTS.md` (Quick Verify stays line 1); after the closing `---` when frontmatter is present (see spec section 18)
 
 ---
 
@@ -118,12 +123,16 @@ You are finished when:
 - Existing documentation has been preserved and relocated appropriately
 - Each document follows the spec's writing standards and anti-patterns (section 19)
 - Each document is within its size target (see each section's **Size target**)
-- `AGENTS.md` is a ~100-line table of contents pointing to deep docs
+- `AGENTS.md` is a ~120-line table of contents pointing to deep docs, in the spec's section order
+- Every `AGENTS.md` invariant is sourced from existing docs/config/code or confirmed by the human
 - Feature docs include **Canonical Files** and **Verification** sections with exact commands
 - ARCHITECTURE.md includes canonical file references for major patterns
 - Product specs use the dedicated template (section 9), not the feature doc format
-- `<!-- last_verified: YYYY-MM-DD -->` headers are present on all docs
+- `<!-- last_verified: YYYY-MM-DD -->` headers are present on all docs except agent config files
+- Collection docs carry frontmatter per spec section 19; no other doc does
+- No Agent Skills or extra agent config files were created
 - Cross-links between documents are correct
 - No speculative, duplicate, or orphan documentation remains
 - Docs don't restate what linters, type systems, or frameworks already enforce
 - A fresh agent session could read `AGENTS.md` and know where to go for any task
+- Final report flags `AGENTS.md` for human review, listing any invariants you could not source

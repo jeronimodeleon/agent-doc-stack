@@ -1,4 +1,4 @@
-# Agent Doc Stack v2.2
+# Agent Doc Stack v2.3
 
 A contract-based, agent-first documentation system for AI-assisted application development
 
@@ -23,6 +23,7 @@ Documentation exists so coding agents can operate autonomously within defined bo
 - **DRY docs: define every fact once, in one canonical location, and link everywhere else** — if information appears in two places, one of them is wrong (or will be soon)
 - **Token budgets matter** — every doc has a size target; agent performance degrades as context fills, so keep docs within their budgets
 - **Don't document what tools enforce** — if linters, type checkers, or frameworks already enforce it, don't repeat it in docs
+- **Instructions over overviews** — agents follow explicit, non-standard rules well; generic repo overviews add tokens without improving results. Human-written rules beat generated summaries.
 
 **Primary goal:** minimum tokens, maximum correctness, zero drift.
 
@@ -102,7 +103,7 @@ Every other doc is pulled on demand, based on the task:
 | Tool or MCP access needed | `docs/agent-tools.md` |
 | Agent-specific operating rules apply | Agent config file (if present) |
 
-`AGENTS.md` lists every doc path so agents can find them without guessing.
+`AGENTS.md` links every root doc and every single-file doc in `docs/`, and lists collection directories (`docs/features/`, `docs/product-specs/`, `docs/design-docs/`, `docs/references/`, `docs/exec-plans/`) as directories, not per file — agents pick a collection doc by its frontmatter `description` (section 19).
 
 ### Conflict resolution
 
@@ -206,21 +207,23 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 - `Quick verify: <exact command to run the fast test subset>`
 - The single highest-frequency command agents will run. Keep it at the top so it's visible without scrolling.
 
-#### Repo Purpose (2-3 lines)
-- What this repo is and what it produces
-
-#### Architecture Boundaries (5-10 lines)
-- Key system boundaries agents must respect
-- Link to `ARCHITECTURE.md` for full detail
-
 #### Invariants and Guardrails (10-15 lines)
+- Non-standard, repo-specific, actionable rules first; never restate framework defaults
 - Rules agents must never break (testing, doc updates, PR structure)
 - Testing requirements (TDD guidance, when to run tests)
 - Doc update rules (same-PR requirement)
+- Source from humans or existing docs, not generated — in 2026 studies, LLM-generated context files showed no benefit
+
+#### Boundaries (5-10 lines)
+- Key system boundaries phrased as rules (e.g., "`web/` never calls the DB directly — go through `api/`")
+- Link to `ARCHITECTURE.md` for full detail
+
+#### Repo Purpose (1-2 lines)
+- What this repo is and what it produces
 
 #### Doc Map (10-15 lines)
-- Pointer to every canonical doc location
-- One line per doc: file path + purpose
+- Link every root doc and every single-file doc in `docs/`: file path + purpose, one line each
+- List collection directories (`docs/features/`, `docs/product-specs/`, `docs/design-docs/`, `docs/references/`, `docs/exec-plans/`) as directories, not per file
 
 #### Planning and Execution (5-10 lines)
 - Where plans live (`docs/exec-plans/active/`)
@@ -233,10 +236,11 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 
 ### Writing standard
 
-- Target ~120 lines total
+- Target ~120 lines total — it is loaded on every task, so every line is a recurring token cost
 - Every line is actionable or a pointer
 - No prose blocks
 - No duplicated rules — point to the source doc instead
+- No frontmatter — Quick Verify stays on line 1
 
 ---
 
@@ -249,6 +253,11 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 ### Required structure
 
 ```markdown
+---
+type: feature
+description: <one line: what this doc covers and when to read it>
+---
+<!-- last_verified: YYYY-MM-DD -->
 # Feature: <name>
 
 ## Purpose
@@ -323,6 +332,11 @@ Use `docs/product-specs/` when documentation spans multiple features, describes 
 ### Required structure
 
 ```markdown
+---
+type: product-spec
+description: <one line: what this doc covers and when to read it>
+---
+<!-- last_verified: YYYY-MM-DD -->
 # Spec: <name>
 
 ## Scope
@@ -431,9 +445,14 @@ Which features and systems this spec covers.
 - Security boundaries
 - MCP usage notes
 
-### Agent skills and custom commands
+### Agent Skills
 
-Most coding agents support reusable skills or custom commands (e.g., Claude Code's `.claude/commands/`, Codex's `.agents/skills/`, Cursor's `.cursor/plans/`). These are **agent-specific features** — use each agent's native format and directory structure rather than defining a shared location. If skills are in use, document their existence and purpose in this file so other agents or humans know they're available.
+[Agent Skills](https://github.com/agentskills/agentskills) (`SKILL.md`: `name` + `description` frontmatter, loaded on demand) is the portable open standard for repeatable procedures (e.g., bugfix loop, doc-update routine).
+
+- Skills are MAY — never created during documentation initialization
+- Live in whichever directory the agent in use discovers
+- MUST link to `docs/dev-workflows.md` rather than restate its rules (define once)
+- MUST be listed in this file
 
 ---
 
@@ -529,6 +548,11 @@ Agents update this doc when quality standards change or new patterns are establi
 ### Structure (lightweight ADR)
 
 ```markdown
+---
+type: adr
+description: <one line: what this doc covers and when to read it>
+---
+<!-- last_verified: YYYY-MM-DD -->
 # Decision: <title>
 
 ## Context
@@ -561,6 +585,17 @@ What was decided.
 - External API documentation that agents must reference
 - Third-party service constraints or configuration
 - Standards or specifications the project must comply with
+
+### Structure
+
+```markdown
+---
+type: reference
+description: <one line: what this doc covers and when to read it>
+---
+<!-- last_verified: YYYY-MM-DD -->
+# Reference: <topic>
+```
 
 ### Rules
 
@@ -633,9 +668,12 @@ When code changes, agents MUST update:
 
 ### Staleness detection
 
-Docs drift when code changes but docs don't. Use one or more of these mechanisms to catch it:
+Docs drift when code changes but docs don't.
 
-- **Header timestamp**: add `<!-- last_verified: YYYY-MM-DD -->` to the top of each doc; agents update this when they verify or modify the doc
+- **Header timestamp** (required): every doc except agent config files MUST carry `<!-- last_verified: YYYY-MM-DD -->` at the top — on the line right after the closing `---` when frontmatter is present, and on line 2 of `AGENTS.md` (Quick Verify keeps line 1); agents update it when they verify or modify the doc
+
+Additional mechanisms:
+
 - **CI check** (recommended): compare modification dates of doc files against their related source files; flag docs that haven't been updated since related code changed
 - **Agent pre-task check**: before starting work, agents should verify that the docs they read are consistent with the code they see; if not, flag the drift before proceeding
 - **References are highest-risk**: `docs/references/` files summarize external sources that change independently — review these on a regular cadence
@@ -654,6 +692,34 @@ All docs MUST follow:
 - Reference canonical files instead of copying code into docs — keeps docs short and prevents staleness
 
 > **Golden Rule:** Define once, link everywhere. As short as possible, but precise enough to prevent ambiguity. If a fact lives in two files, delete one and replace it with a link.
+
+### Frontmatter (OKF-compatible)
+
+Optional overall; RECOMMENDED for collection docs only:
+
+| Directory | `type` |
+|-----------|--------|
+| `docs/features/` | `feature` |
+| `docs/product-specs/` | `product-spec` |
+| `docs/design-docs/` | `adr` |
+| `docs/references/` | `reference` |
+
+```markdown
+---
+type: feature        # feature | product-spec | adr | reference — fixed by directory
+description: <one line: what this doc covers and when to read it>
+---
+<!-- last_verified: YYYY-MM-DD -->
+```
+
+- MUST NOT be added to `AGENTS.md` (Quick Verify must stay line 1; Codex reads it raw), `README.md`, `ARCHITECTURE.md`, `app-workflows.md`, `dev-workflows.md`, exec-plans, or agent config files — their path already identifies them
+- No `title` field — the H1 is the title
+- Unknown extra keys are allowed (OKF consumers ignore them); don't add any by default
+- `description` lets an agent pick the right doc from frontmatter alone (e.g., `grep '^description:' docs/features/*.md`) before opening full docs
+- Frontmatter lines don't count toward size targets
+- Compatible with [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) (OKF requires only `type`)
+- OKF `index.md` directory listings MAY be generated by tooling from `description`; never hand-maintain them (duplicated descriptions drift)
+- OKF `log.md` is not used — git history and `docs/exec-plans/completed/` cover history
 
 ### What NOT to document
 
