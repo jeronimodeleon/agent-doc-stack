@@ -14,7 +14,7 @@ This specification is authoritative. You MUST follow it strictly — all rules f
 
 ## Your Task
 
-Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v2.3 specification.
+Initialize, normalize, or correct the documentation in this repository so it fully complies with the Agent Doc Stack v3.0 specification.
 
 Your objectives:
 
@@ -80,6 +80,7 @@ If the repository already contains other documentation:
 - Merge durable, correct information into the proper locations
 - Flag or remove: duplicates, outdated docs, speculative content
 - If deletion or consolidation is ambiguous: propose a plan and ask for confirmation
+- Upgrading from v2.x: add `description` frontmatter to every `docs/` subdirectory doc, moving the Feature `## Purpose` line or Plan Goal into it
 
 Do NOT preserve documentation solely for historical reasons.
 
@@ -94,12 +95,12 @@ Key reminders:
 - Only create **required** docs always; create **create-on-need** docs only when you have concrete content (see spec section 2 for the distinction)
 - Only create the agent-specific config file for the agent you are (see spec section 17)
 - `AGENTS.md` must be a ~120-line table of contents, not a manual, in the section order defined in spec section 7. The Doc Map lists root docs and single-file docs, and collection directories as directories — not every file
-- If work involves multiple files or non-trivial assumptions, write a plan to `docs/exec-plans/active/` first (see spec section 13)
+- Write a plan to `docs/exec-plans/active/` first when spec section 13 requires one
 - Feature docs must include a **Verification** section with exact test commands agents can run (see spec section 8)
 - Feature docs and ARCHITECTURE.md must include **Canonical Files** — pointers to exemplar implementations (see spec sections 6, 8)
 - Product specs use their own template distinct from feature docs — include Scope, Features Involved, User Personas, Cross-Cutting Behaviors (see spec section 9)
 - Respect **size targets** for each doc type — if a doc exceeds its budget, split content into linked sub-docs
-- Add OKF-compatible frontmatter (`type`, `description`) to collection docs only — see spec section 19 for types and exclusions. Do not create `index.md` or `log.md`
+- Start every doc inside a `docs/` subdirectory with `description` frontmatter (see spec section 19). Do not create `index.md` or `log.md`
 - Add `<!-- last_verified: YYYY-MM-DD -->` to every doc except agent config files, for staleness tracking — at the top; on line 2 of `AGENTS.md` (Quick Verify stays line 1); after the closing `---` when frontmatter is present (see spec section 18)
 
 ---
@@ -109,7 +110,7 @@ Key reminders:
 If the repository contains multiple packages, services, or distinct modules:
 
 - Root-level docs cover repo-wide concerns
-- Each package/service MAY have its own scoped `AGENTS.md`, `ARCHITECTURE.md`, or agent config file (see spec section 2)
+- Each package/service gets its own `AGENTS.md`/`ARCHITECTURE.md`/agent config per the triggers in spec section 2
 - Subdirectory docs supplement root docs — they don't replace shared rules
 - When in doubt about scoping, ask before creating nested docs
 
@@ -129,7 +130,7 @@ You are finished when:
 - ARCHITECTURE.md includes canonical file references for major patterns
 - Product specs use the dedicated template (section 9), not the feature doc format
 - `<!-- last_verified: YYYY-MM-DD -->` headers are present on all docs except agent config files
-- Collection docs carry frontmatter per spec section 19; no other doc does
+- Every doc inside a `docs/` subdirectory has `description` frontmatter per spec section 19; no other doc does
 - No Agent Skills or extra agent config files were created
 - Cross-links between documents are correct
 - No speculative, duplicate, or orphan documentation remains

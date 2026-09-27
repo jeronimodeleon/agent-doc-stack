@@ -1,4 +1,4 @@
-# Agent Doc Stack v2.3
+# Agent Doc Stack v3.0
 
 A contract-based, agent-first documentation system for AI-assisted application development
 
@@ -23,6 +23,7 @@ Documentation exists so coding agents can operate autonomously within defined bo
 - **DRY docs: define every fact once, in one canonical location, and link everywhere else** — if information appears in two places, one of them is wrong (or will be soon)
 - **Token budgets matter** — every doc has a size target; agent performance degrades as context fills, so keep docs within their budgets
 - **Don't document what tools enforce** — if linters, type checkers, or frameworks already enforce it, don't repeat it in docs
+- **One concept per file; the path is its identity** — each doc covers one feature, spec, decision, reference, or plan; its `description` lets agents choose it without opening it (adapted from [Google's Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md))
 - **Instructions over overviews** — agents follow explicit, non-standard rules well; generic repo overviews add tokens without improving results. Human-written rules beat generated summaries.
 
 **Primary goal:** minimum tokens, maximum correctness, zero drift.
@@ -75,11 +76,13 @@ CLAUDE.md                              # Claude Code only
 
 ### Nested docs for larger repos (monorepos, multi-service)
 
-For repositories with multiple packages, services, or distinct modules, subdirectory-scoped docs are allowed:
+For repositories with multiple packages, services, or distinct modules:
 
-- Each package/service MAY have its own `AGENTS.md`, `ARCHITECTURE.md`, or agent config file
+- A package gets its own `AGENTS.md` when its commands or conventions differ from root
+- A package gets its own `ARCHITECTURE.md` when it deploys independently or owns its own data store
+- A package gets nested agent config only where that agent requires it
 - Subdirectory docs **supplement** the root docs — they add specificity, not replace shared rules
-- When root and subdirectory docs conflict, the **most-specific doc wins** and the conflict should be flagged for resolution
+- When root and subdirectory docs conflict, the **most-specific doc wins** and the conflict MUST be flagged for resolution
 - Keep the root-level docs as the canonical entry point; subdirectory docs handle local concerns only
 
 ---
@@ -254,14 +257,10 @@ AGENTS.md is a **table of contents**, not a manual. It should be concise enough 
 
 ```markdown
 ---
-type: feature
-description: <one line: what this doc covers and when to read it>
+description: <what it covers>. Read when <trigger>.
 ---
 <!-- last_verified: YYYY-MM-DD -->
 # Feature: <name>
-
-## Purpose
-One sentence describing the problem this feature solves.
 
 ## Used By
 - UI: <screen or flow>
@@ -290,7 +289,7 @@ One sentence describing the problem this feature solves.
 ## Edge Cases
 - Case -> expected behavior
 
-## UX States (if applicable)
+## UX States (UI features only)
 - Empty
 - Loading
 - Error
@@ -333,8 +332,7 @@ Use `docs/product-specs/` when documentation spans multiple features, describes 
 
 ```markdown
 ---
-type: product-spec
-description: <one line: what this doc covers and when to read it>
+description: <what it covers>. Read when <trigger>.
 ---
 <!-- last_verified: YYYY-MM-DD -->
 # Spec: <name>
@@ -361,7 +359,7 @@ Which features and systems this spec covers.
 
 ## Verification
 - How to validate cross-feature behavior end-to-end
-- Exact commands if applicable
+- Exact commands
 ```
 
 ### Writing standard
@@ -434,25 +432,27 @@ Which features and systems this spec covers.
 
 ---
 
-## 12. Agent Tools (`docs/agent-tools.md`) *(Optional)*
+## 12. Agent Tools (`docs/agent-tools.md`) *(Create-on-need)*
 
 **Purpose:** tool and context access contract (MCP-friendly)
 
-### MAY contain
+Create when the repo configures MCP servers, CLIs agents must use, or skills.
+
+### MUST contain
 
 - Tool list and purpose
-- Local vs CI access
+- Where access applies (local vs CI)
 - Security boundaries
-- MCP usage notes
 
 ### Agent Skills
 
 [Agent Skills](https://github.com/agentskills/agentskills) (`SKILL.md`: `name` + `description` frontmatter, loaded on demand) is the portable open standard for repeatable procedures (e.g., bugfix loop, doc-update routine).
 
-- Skills are MAY — never created during documentation initialization
-- Live in whichever directory the agent in use discovers
-- MUST link to `docs/dev-workflows.md` rather than restate its rules (define once)
-- MUST be listed in this file
+- A skill only wraps a procedure already defined in `docs/dev-workflows.md`
+- Links to it, never restates it (define once)
+- Listed in this file
+- Never created during documentation initialization
+- Lives in the directory the agent in use discovers
 
 ---
 
@@ -470,7 +470,7 @@ Plans are not throwaway notes. They are versioned artifacts with goals, decision
 
 ### Plan MUST contain
 
-- Goal: what this plan achieves
+- Frontmatter (section 19) — its `description` states the goal
 - Decisions: key choices made and why
 - Steps: ordered execution checklist
 - Validation: how to verify the plan succeeded
@@ -478,11 +478,7 @@ Plans are not throwaway notes. They are versioned artifacts with goals, decision
 
 ### When plans are required
 
-- New features
-- Data model changes
-- User explicitly requests a plan
-
-Plans are optional for small multi-file edits, bugfixes, and routine refactors. Use judgment — a plan should clarify work, not add ceremony.
+A plan is required for a new feature, a data model or schema change, a change crossing an `ARCHITECTURE.md` boundary, or when the user requests one. Otherwise no plan.
 
 ### Lifecycle
 
@@ -549,8 +545,7 @@ Agents update this doc when quality standards change or new patterns are establi
 
 ```markdown
 ---
-type: adr
-description: <one line: what this doc covers and when to read it>
+description: <what it covers>. Read when <trigger>.
 ---
 <!-- last_verified: YYYY-MM-DD -->
 # Decision: <title>
@@ -590,8 +585,7 @@ What was decided.
 
 ```markdown
 ---
-type: reference
-description: <one line: what this doc covers and when to read it>
+description: <what it covers>. Read when <trigger>.
 ---
 <!-- last_verified: YYYY-MM-DD -->
 # Reference: <topic>
@@ -674,9 +668,8 @@ Docs drift when code changes but docs don't.
 
 Additional mechanisms:
 
-- **CI check** (recommended): compare modification dates of doc files against their related source files; flag docs that haven't been updated since related code changed
-- **Agent pre-task check**: before starting work, agents should verify that the docs they read are consistent with the code they see; if not, flag the drift before proceeding
-- **References are highest-risk**: `docs/references/` files summarize external sources that change independently — review these on a regular cadence
+- **Agent pre-task check**: before starting work, agents MUST verify that the docs they read are consistent with the code they see; if not, flag the drift before proceeding
+- **References are highest-risk**: `docs/references/` files summarize external sources that change independently — re-verify before relying on a reference whose `last_verified` is older than 90 days
 
 ---
 
@@ -693,33 +686,21 @@ All docs MUST follow:
 
 > **Golden Rule:** Define once, link everywhere. As short as possible, but precise enough to prevent ambiguity. If a fact lives in two files, delete one and replace it with a link.
 
-### Frontmatter (OKF-compatible)
-
-Optional overall; RECOMMENDED for collection docs only:
-
-| Directory | `type` |
-|-----------|--------|
-| `docs/features/` | `feature` |
-| `docs/product-specs/` | `product-spec` |
-| `docs/design-docs/` | `adr` |
-| `docs/references/` | `reference` |
+### Frontmatter
 
 ```markdown
 ---
-type: feature        # feature | product-spec | adr | reference — fixed by directory
-description: <one line: what this doc covers and when to read it>
+description: <what it covers>. Read when <trigger>.
 ---
 <!-- last_verified: YYYY-MM-DD -->
 ```
 
-- MUST NOT be added to `AGENTS.md` (Quick Verify must stay line 1; Codex reads it raw), `README.md`, `ARCHITECTURE.md`, `app-workflows.md`, `dev-workflows.md`, exec-plans, or agent config files — their path already identifies them
-- No `title` field — the H1 is the title
-- Unknown extra keys are allowed (OKF consumers ignore them); don't add any by default
-- `description` lets an agent pick the right doc from frontmatter alone (e.g., `grep '^description:' docs/features/*.md`) before opening full docs
+- MUST be on every doc inside a `docs/` subdirectory: `features/`, `product-specs/`, `design-docs/`, `references/`, `exec-plans/active/`, `exec-plans/completed/` — including `_template.md` (placeholder description) and nested package `docs/` dirs
+- `description`: one line, ≤120 chars, format "<what it covers>. Read when <trigger>."
+- No other key is defined; keys a doc site generator requires (e.g., `title`, `sidebar_position`) are allowed
+- Root and single-file docs carry none — `README.md`, `AGENTS.md`, `ARCHITECTURE.md`, `app-workflows.md`, `dev-workflows.md`, `QUALITY_SCORE.md`, `RELIABILITY.md`, `SECURITY.md`, `agent-tools.md`, `tech-debt-tracker.md`, agent config files: their path identifies them, and `AGENTS.md` Quick Verify stays line 1
+- Agents select docs by scanning descriptions (`grep '^description:' docs/features/*.md`) before opening them
 - Frontmatter lines don't count toward size targets
-- Compatible with [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) (OKF requires only `type`)
-- OKF `index.md` directory listings MAY be generated by tooling from `description`; never hand-maintain them (duplicated descriptions drift)
-- OKF `log.md` is not used — git history and `docs/exec-plans/completed/` cover history
 
 ### What NOT to document
 
