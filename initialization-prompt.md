@@ -10,6 +10,8 @@ https://raw.githubusercontent.com/jeronimodeleon/agent-doc-stack/main/agent-doc-
 
 This specification is authoritative. You MUST follow it strictly — all rules for structure, writing standards, doc locations, agent config, planning, and quality live there.
 
+Confirm the fetched spec's title reads `Agent Doc Stack v3.0`. If it shows another version (CDN caching can serve a stale copy), re-fetch once; if it is still stale, STOP and tell the human.
+
 ---
 
 ## Your Task
@@ -80,7 +82,10 @@ If the repository already contains other documentation:
 - Merge durable, correct information into the proper locations
 - Flag or remove: duplicates, outdated docs, speculative content
 - If deletion or consolidation is ambiguous: propose a plan and ask for confirmation
-- Upgrading from v2.x: add `description` frontmatter to every `docs/` subdirectory doc, moving the Feature `## Purpose` line or Plan Goal into it
+- Upgrading from v2.x:
+  - Add `description` frontmatter to every doc in the spec section 19 directories (including exec-plans), moving the Feature `## Purpose` line or Plan Goal into it, then remove that section
+  - Remove `type:` keys, and any `index.md` or `log.md`
+  - Replace per-file `AGENTS.md` Doc Map entries for collection docs with the collection directory
 
 Do NOT preserve documentation solely for historical reasons.
 
@@ -98,9 +103,10 @@ Key reminders:
 - Write a plan to `docs/exec-plans/active/` first when spec section 13 requires one
 - Feature docs must include a **Verification** section with exact test commands agents can run (see spec section 8)
 - Feature docs and ARCHITECTURE.md must include **Canonical Files** — pointers to exemplar implementations (see spec sections 6, 8)
-- Product specs use their own template distinct from feature docs — include Scope, Features Involved, User Personas, Cross-Cutting Behaviors (see spec section 9)
+- Product specs use their own template distinct from feature docs — include every section of the spec section 9 template
 - Respect **size targets** for each doc type — if a doc exceeds its budget, split content into linked sub-docs
-- Start every doc inside a `docs/` subdirectory with `description` frontmatter (see spec section 19). Do not create `index.md` or `log.md`
+- Create `docs/features/_template.md` with a placeholder `description` (see spec section 2)
+- Start every doc in the spec section 19 directories (`features/`, `product-specs/`, `design-docs/`, `references/`, `exec-plans/active/`, `exec-plans/completed/`) with `description` frontmatter: one line, ≤120 chars, "<what it covers>. Read when <trigger>." `docs/exec-plans/tech-debt-tracker.md` and single-file docs carry none. Do not create `index.md` or `log.md`
 - Add `<!-- last_verified: YYYY-MM-DD -->` to every doc except agent config files, for staleness tracking — at the top; on line 2 of `AGENTS.md` (Quick Verify stays line 1); after the closing `---` when frontmatter is present (see spec section 18)
 
 ---
@@ -130,7 +136,7 @@ You are finished when:
 - ARCHITECTURE.md includes canonical file references for major patterns
 - Product specs use the dedicated template (section 9), not the feature doc format
 - `<!-- last_verified: YYYY-MM-DD -->` headers are present on all docs except agent config files
-- Every doc inside a `docs/` subdirectory has `description` frontmatter per spec section 19; no other doc does
+- Every doc in the spec section 19 directories (including `_template.md`) has valid `description` frontmatter; no other doc does
 - No Agent Skills or extra agent config files were created
 - Cross-links between documents are correct
 - No speculative, duplicate, or orphan documentation remains
